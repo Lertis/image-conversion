@@ -1,0 +1,44 @@
+<div class="container">
+  <div class="drop-zone">
+    <ngx-dropzone [multiple]="true" accept=".heic,.heif" (change)="onFilesSelected($event)"
+      [disableClick]="conversionInProgress" class="dropzone-section">
+      <div class="dropzone-section__content">
+        <div class="dropzone-section__content__icon-container">
+          <mat-icon>upload_file</mat-icon>
+        </div>
+        <ngx-dropzone-label class="dropzone-section__content__label">
+          Drop images or click to upload
+        </ngx-dropzone-label>
+      </div>
+    </ngx-dropzone>
+  </div>
+
+  <div *ngIf="conversionInProgress" class="spinner">
+    <mat-spinner [diameter]="50"></mat-spinner>
+  </div>
+
+  <div *ngIf="!conversionInProgress">
+    <div class="selected-count">Count of selected files are: {{ images.length }} <br></div>
+    <div class="images-list" *ngIf="convertedImages.length">
+      <ngx-dropzone-image-preview *ngFor="let image of convertedImages" [file]="image"></ngx-dropzone-image-preview>
+    </div>
+
+    <div class="action-buttons">
+      <button *ngIf="!convertedImages.length" mat-raised-button color="primary"
+        [disabled]="conversionInProgress || !images.length" (click)="convert()">Convert
+      </button>
+
+      <div class="after-conversion" *ngIf="convertedImages.length">
+        <button mat-fab extended color="primary" (click)="download()">
+          <mat-icon>download</mat-icon>
+          Download
+        </button>
+
+        <button mat-fab extended color="accent" (click)="clear()">
+          <mat-icon>clear</mat-icon>
+          Revert all images
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
