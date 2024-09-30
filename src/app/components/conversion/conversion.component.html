@@ -1,7 +1,7 @@
 <div class="container">
   <div class="drop-zone">
     <ngx-dropzone [multiple]="true" accept=".heic,.heif" (change)="onFilesSelected($event)"
-      [disableClick]="conversionInProgress" class="dropzone-section">
+      [disableClick]="convertState.pending" class="dropzone-section">
       <div class="dropzone-section__content">
         <div class="dropzone-section__content__icon-container">
           <mat-icon>upload_file</mat-icon>
@@ -13,20 +13,22 @@
     </ngx-dropzone>
   </div>
 
-  <div *ngIf="conversionInProgress" class="progress">
-    <p>{{ progress | number:'1.1-2' }} %</p>
-    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+  <div *ngIf="convertState.pending" class="progress">
+    <p>{{ convertState.progress | number:'1.1-2' }} %</p>
+    <mat-progress-bar mode="determinate" [value]="convertState.progress"></mat-progress-bar>
   </div>
 
-  <div *ngIf="!conversionInProgress">
+  <div *ngIf="!convertState.pending">
     <div class="selected-count">Count of selected files are: {{ images.length }} <br></div>
+    <div *ngIf="convertState.time.start && convertState.time.end" class="converstion-time">Converted in: {{ (convertState.time.end - convertState.time.start) | timestampPreview }} <br></div>
     <div class="images-list" *ngIf="convertedImages.length">
-      <ngx-dropzone-image-preview *ngFor="let image of convertedImages" [file]="image"></ngx-dropzone-image-preview>
+      <ngx-dropzone-image-preview *ngFor="let image of convertedImages;  trackBy:imagesTrack"
+        [file]="image"></ngx-dropzone-image-preview>
     </div>
 
     <div class="action-buttons">
       <button *ngIf="!convertedImages.length" mat-raised-button color="primary"
-        [disabled]="conversionInProgress || !images.length" (click)="convert()">Convert
+        [disabled]="convertState.pending || !images.length" (click)="convert()">Convert
       </button>
 
       <div class="after-conversion" *ngIf="convertedImages.length">
