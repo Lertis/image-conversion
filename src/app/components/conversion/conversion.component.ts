@@ -1,16 +1,15 @@
-import { NgFor, NgIf } from '@angular/common'
-import { Component } from '@angular/core'
+import { NgFor, NgIf, DecimalPipe } from '@angular/common'
+import { Component, effect } from '@angular/core'
 
 import { MatIconModule } from '@angular/material/icon'
 import { MatButtonModule } from '@angular/material/button'
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
-
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 
 import { NgxDropzoneModule } from 'ngx-dropzone'
 import { cloneDeep } from 'lodash'
 
-import { convertHeicToType, downloadZip } from '../../utils/conversion'
+import { Conversion } from '../../utils/conversion'
 
 @Component({
   selector: 'hc-conversion',
@@ -18,9 +17,9 @@ import { convertHeicToType, downloadZip } from '../../utils/conversion'
   styleUrls: ['./conversion.component.scss'],
   standalone: true,
   imports: [
-    NgIf, NgFor,
+    NgIf, NgFor, DecimalPipe,
     NgxDropzoneModule,
-    MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSnackBarModule
+    MatIconModule, MatButtonModule, MatSnackBarModule, MatProgressBarModule
   ]
 })
 export class ConversionComponent {
@@ -29,8 +28,13 @@ export class ConversionComponent {
   blobs: Blob[] = []
 
   conversionInProgress = false
+  progress = 0
 
-  constructor (private readonly snackBar: MatSnackBar) { }
+  private conversion = new Conversion()
+
+  constructor (private readonly snackBar: MatSnackBar) {
+    effect(() => { this.progress = this.conversion.progress() })
+  }
 
   onFilesSelected (event: { addedFiles: File[] }): void {
     this.images = cloneDeep(event.addedFiles)
@@ -39,7 +43,7 @@ export class ConversionComponent {
   async convert (): Promise<void> {
     this.snackBar.open('Convertion started', '', { duration: 3000 })
     this.conversionInProgress = true
-    this.blobs = await convertHeicToType(this.images)
+    this.blobs = await this.conversion.convertHeicToType(this.images)
     for (let i = 0; i < this.blobs.length; i++) this.convertedImages.push(new File([this.blobs[i]], this.images[i].name))
     this.conversionInProgress = false
   }
@@ -49,12 +53,13 @@ export class ConversionComponent {
     const l = this.blobs.length
     const files: { name: string, blob: Blob }[] = []
     for (let i = 0; i < l; i++) files.push({ name: this.images[i].name, blob: this.blobs[i] })
-    downloadZip(files)
+    this.conversion.downloadZip(files)
   }
 
   clear (): void {
     this.images = []
     this.convertedImages = []
     this.conversionInProgress = false
+    this.conversion.resetProgress()
   }
 }

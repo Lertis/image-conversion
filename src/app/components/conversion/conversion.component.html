@@ -13,8 +13,9 @@
     </ngx-dropzone>
   </div>
 
-  <div *ngIf="conversionInProgress" class="spinner">
-    <mat-spinner [diameter]="50"></mat-spinner>
+  <div *ngIf="conversionInProgress" class="progress">
+    <p>{{ progress | number:'1.1-2' }} %</p>
+    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
   </div>
 
   <div *ngIf="!conversionInProgress">
